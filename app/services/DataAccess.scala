@@ -9,5 +9,6 @@ import scala.util.Try
  * Created by chiua on 24/10/2017.
  */
 trait DataAccess {
-  def loadHBaseData(): Unit
+  def getResponseCode(): Int
+  def getOutput(period: String, id: String): String
 }
