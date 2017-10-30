@@ -16,16 +16,8 @@ import sys.process._
  */
 @Singleton
 class HBaseData @Inject() (val loadData: Boolean, val config: Config) extends DataAccess {
-  def getResponseCode(): Int = {
-    //val curlRequest = Seq("curl", "-vi", "-X", "POST", "-H", "Accept: text/xml", "http://localhost:8081/namespaces/testing")
-    val curlRequest = Seq("curl", "-H", "Accept: application/json", "http://localhost:8081/august/1234")
-    curlRequest !
-  }
-
   def getOutput(period: String, id: String): String = {
-    //val curlRequest = Seq("curl", "-vi", "-X", "POST", "-H", "Accept: text/xml", "http://localhost:8081/namespaces/testing")
-    val curlRequest = Seq("curl", "-H", "Accept: application/json", s"http://localhost:8081/${period}/${id}")
-    curlRequest !!
+    val curlRequest = Seq("curl", "-H", "Accept: application/json", s"http://localhost:8081/${period}/${id}").!!
+    curlRequest
   }
-
 }

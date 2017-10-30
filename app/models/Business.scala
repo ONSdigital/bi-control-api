@@ -1,6 +1,6 @@
 package models
 import java.sql.ResultSet
-import play.api.libs.json.{ JsValue, Json, Writes }
+import play.api.libs.json.{ JsValue, Json, OFormat }
 import scala.util.parsing.json.JSON
 
 import utils.RsIterator
@@ -21,25 +21,6 @@ case class Business(
 )
 
 object Business {
-  implicit val writer = new Writes[Business] {
-    def writes(b: Business): JsValue = {
-      Json.obj(
-        "UBRN" -> b.id,
-        "Vars" -> Json.obj(
-          "BusinessName" -> b.businessName,
-          "UPRN" -> b.uprn,
-          "PostCode" -> b.postCode,
-          "IndustryCode" -> b.industryCode,
-          "LegalStatus" -> b.legalStatus,
-          "TradingStatus" -> b.tradingStatus,
-          "Turnover" -> b.turnover,
-          "EmploymentBands" -> b.employmentBands,
-          "VatRefs" -> b.vatRefs,
-          "PayeRefs" -> b.payeRefs,
-          "CompanyNo" -> b.companyNo
-        )
-      )
-    }
-  }
-  def toJson(business: List[Business]): JsValue = Json.toJson(business)
+  implicit val unitFormat: OFormat[Business] = Json.format[Business]
+  def toJson(business: String): JsValue = Json.toJson(business)
 }

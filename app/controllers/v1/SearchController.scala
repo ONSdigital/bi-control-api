@@ -24,6 +24,7 @@ class SearchController @Inject() (data: DataAccess, val config: Config) extends 
   def proxyRequest(period: String, id: String): Future[Result] = {
     //data.loadHBaseData()
     val exitCode = data.getOutput(period: String, id: String)
-    Ok(s"last, ${exitCode}").future
+    Ok(Business.toJson(exitCode)).future
+    //Ok(Json.prettyPrint(Business.toJson(exitCode))).future
   }
 }
