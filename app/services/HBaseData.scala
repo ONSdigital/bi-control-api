@@ -1,11 +1,9 @@
 package services
 
-import java.io.File
 import java.time.{ Period, YearMonth }
 import javax.inject.{ Inject, Singleton }
 
 import com.typesafe.config.Config
-import org.apache.hadoop.util.ToolRunner
 import models._
 
 import sys.process._
@@ -17,7 +15,6 @@ import sys.process._
 @Singleton
 class HBaseData @Inject() (val loadData: Boolean, val config: Config) extends DataAccess {
   def getOutput(period: String, id: String): String = {
-    val curlRequest = Seq("curl", "-H", "Accept: application/json", s"http://localhost:8081/${period}/${id}").!!
-    curlRequest
+    Seq("curl", "-H", "Accept: application/json", s"http://localhost:8081/${period}/${id}").!!
   }
 }

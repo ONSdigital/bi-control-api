@@ -1,14 +1,13 @@
 package controllers.v1
-
 import java.time.{ DateTimeException, Period }
 import javax.inject.Inject
 import play.api.mvc.{ Action, AnyContent, Result, Controller }
 import scala.concurrent.Future
-import scala.util.{ Failure, Success, Try }
 import com.typesafe.config.Config
 import utils.Utilities._
 import models._
 import services._
+import play.api.libs.json._
 
 /**
  * Created by ChiuA on 23/10/2017.
@@ -17,14 +16,12 @@ class SearchController @Inject() (data: DataAccess, val config: Config) extends 
 
   def getBusiness(period: String, id: String): Action[AnyContent] = {
     Action.async { implicit request =>
-      proxyRequest(period, id)
+      ResultsMatcher(period, id)
     }
   }
 
-  def proxyRequest(period: String, id: String): Future[Result] = {
-    //data.loadHBaseData()
-    val exitCode = data.getOutput(period: String, id: String)
-    Ok(Business.toJson(exitCode)).future
-    //Ok(Json.prettyPrint(Business.toJson(exitCode))).future
+  def ResultsMatcher(period: String, id: String): Future[Result] = {
+    val businessModel = Business.toJson(data.getOutput(period, id))
+    Ok(Json.toJson(businessModel)).future
   }
 }

@@ -16,11 +16,39 @@ import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import scala.io.Source
 import scala.util.{ Failure, Success, Try }
+import scala.collection.mutable.ListBuffer
+import java.util.Base64
+import java.nio.charset.StandardCharsets
 
 /**
  * Created by coolit on 18/07/2017.
  */
 object Utilities {
+
+  def decodeHbase(hbaseData: Map[String, Any], column: String) = {
+    val valueKey = Base64.getDecoder.decode(hbaseData.get(column).get.toString.getBytes(StandardCharsets.UTF_8))
+    new String(valueKey)
+  }
+
+  def hbaseMapper(jsonMap: Option[Any]) = {
+    var businessVars = ListBuffer[String]()
+    jsonMap match {
+      case Some(e: Map[String, List[Map[String, Any]]]) => {
+        for ((key, value) <- e)
+          for (record <- value) {
+            businessVars += decodeHbase(record, "key")
+            record.get("Cell") match {
+              case Some(x: List[Map[String, Any]]) => {
+                for (vars <- x)
+                  businessVars += decodeHbase(vars, "$")
+              }
+            }
+          }
+      }
+      case None => println("Error parsing JSon")
+    }
+    businessVars
+  }
   def currentDirectory = new File(".").getCanonicalPath
 
   def errAsJson(status: Int, code: String, msg: String): JsObject = {
