@@ -21,7 +21,7 @@ import java.util.Base64
 import java.nio.charset.StandardCharsets
 
 /**
- * Created by coolit on 18/07/2017.
+ * Created by chiua on 05/11/2017.
  */
 object Utilities {
 
@@ -30,17 +30,18 @@ object Utilities {
     new String(valueKey)
   }
 
-  def hbaseMapper(jsonMap: Option[Any]) = {
-    var businessVars = ListBuffer[String]()
+  def hbaseMapper(jsonMap: Option[Any]): collection.mutable.Map[String, String] = {
+    var businessVars = collection.mutable.Map[String, String]()
     jsonMap match {
       case Some(e: Map[String, List[Map[String, Any]]]) => {
         for ((key, value) <- e)
           for (record <- value) {
-            businessVars += decodeHbase(record, "key")
+            businessVars += ("id" -> decodeHbase(record, "key"))
             record.get("Cell") match {
               case Some(x: List[Map[String, Any]]) => {
-                for (vars <- x)
-                  businessVars += decodeHbase(vars, "$")
+                for (vars <- x) {
+                  businessVars += (decodeHbase(vars, "column") -> decodeHbase(vars, "$"))
+                }
               }
             }
           }

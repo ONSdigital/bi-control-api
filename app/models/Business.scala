@@ -7,8 +7,8 @@ import play.api.libs.json.{ JsValue, Json, OFormat }
 import utils.Utilities._
 
 case class Business(
-  id: Long, //ubrn
-  businessName: String,
+  id: Option[String],
+  businessName: Option[String],
   industryCode: Option[String],
   legalStatus: Option[String],
   tradingStatus: Option[String],
@@ -27,7 +27,19 @@ object Business {
 
   def toJson(business: String): Business = {
     val jsonMap = parseFull(business)
-    val bv = hbaseMapper(jsonMap)
-    Business(bv(0).toLong, bv(1), bv(2), bv(3), bv(4), bv(5), bv(6), bv(7), bv(8), bv(9), bv(10))
+    val bv: collection.mutable.Map[String, String] = hbaseMapper(jsonMap)
+    Business(
+      bv.get("id"),
+      bv.get("vars:businessName"),
+      bv.get("vars:industryCode"),
+      bv.get("vars:legalStatus"),
+      bv.get("vars:tradingStatus"),
+      bv.get("vars:turnover"),
+      bv.get("vars:employmentBands"),
+      bv.get("vars:postCode"),
+      bv.get("vars:vatRefs"),
+      bv.get("vars:payeRefs"),
+      bv.get("vars:companyNo")
+    )
   }
 }
