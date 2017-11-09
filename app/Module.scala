@@ -20,6 +20,6 @@ class Module(environment: Environment, configuration: Configuration) extends Abs
   override def configure() = {
     val config = SbrConfigManager.envConf(ConfigFactory.load())
     bind(classOf[Config]).toInstance(config)
-    bind(classOf[DataAccess]).toInstance(new HBaseData(true, config))
+    bind(classOf[DataAccess]).toInstance(new HBaseData())
   }
 }

@@ -7,19 +7,12 @@ An API for use by sbr-api for accessing CompanyHouse/VAT/PAYE data
 
 If you do not specify a period, the record for the most recent period will be returned.
 
-| method | endpoint                       | example                    |
-|--------|--------------------------------|----------------------------|
-| GET    | /v1/companies/${companyNumber} | GET /v1/companies/AB123456 |
-| GET    | /v1/vats/${vatReference}       | GET /v1/vats/123456789012  |
-| GET    | /v1/payes/${payeReference}     | GET /v1/payes/12345678     |
-
 If you want to specify a particular period, use the format below.
 
 | method | endpoint                                         | example                               |
 |--------|--------------------------------------------------|---------------------------------------|
-| GET    | /v1/periods/${period}/companies/${companyNumber} | /v1/periods/201706/companies/AB123456 |
-| GET    | /v1/periods/${period}/vats/${vatRef}             | /v1/periods/201706/vats/123456789012  |
-| GET    | /v1/periods/${period}/payes/${payeRef}           | /v1/periods/201706/payes/12345        |
+| GET    | /v1/period/:period/id/:id                        | /v1/periods/201706/id/123412341234    |
+
 
 ## Environment Setup
 
@@ -34,25 +27,12 @@ brew install sbt
 
 With the minimal environment setup described above (just Java 8 and SBT), the sbr-admin-data-api will only work with the csv file or in-memory HBase. Further instructions for Hbase (not in memory), Hive and Impala setup/installations can be found [below](#source-setup).
 
-To run the `sbr-ch-data-api`, run the following:
+To run the `bi-data-api`, run the following:
 
 ``` shell
-sbt "api/run -Dsource=hbaseInMemory -Dsbr.hbase.inmemory=true"
+sbt api/run -Dhttp.port=9011
 ```
-
-Note: When using In-Memory HBase, make sure the path to the project path does not include spaces.
-
-The environment variable `sbr.hbase.inmemory` only needs to passed in when running `source=hbaseInMemory`.
-
-Swap the `hbaseInMemory` argument with any of the values in the table below:
-
-| -Dsource value | Data Access                                                                                     |
-|----------------|-------------------------------------------------------------------------------------------------|
-| csv            | Local CSV files `./conf/sample/...` (Real CompanyHouse data, test VAT/PAYE data)                |
-| hiveLocal      | Hive which runs inside the Hortonworks VM                                                       |
-| hbaseLocal     | A local HBase installation                                                                      |
-| hbaseInMemory  | In memory HBase tables with the CompanyHouse/VAT/PAYE CSVs loaded in                            |
-
+                           |
 ## Source Setup
 
 #### csv - No setup required
