@@ -1,10 +1,6 @@
 package services
 
-import java.time.{ Period, YearMonth }
 import javax.inject.{ Inject, Singleton }
-
-import com.typesafe.config.Config
-import models._
 
 import sys.process._
 
@@ -13,7 +9,7 @@ import sys.process._
  * When the application starts, this will be accessible in the controllers through the use of @Inject()
  */
 @Singleton
-class HBaseData() extends DataAccess {
+class HBaseData() {
   def getOutput(period: String, id: String): String = {
     Seq("curl", "-H", "Accept: application/json", s"http://localhost:8081/${period}/${id}").!!
   }

@@ -1,21 +1,24 @@
 package controllers.v1
-import java.time.{ DateTimeException, Period }
+
+import java.time.{ DateTimeException }
 import javax.inject.Inject
+
 import play.api.mvc.{ Action, AnyContent, Result, Controller }
+import play.api.libs.json._
+
 import scala.concurrent.Future
 import scala.util.{ Failure, Success }
-import com.typesafe.config.Config
+import scala.util.Try
+
 import utils.Utilities._
 import models._
 import services._
-import play.api.libs.json._
-import scala.util.Try
 
 /**
  * Created by ChiuA on 23/10/2017.
  */
 
-class SearchController @Inject() (data: DataAccess, val config: Config) extends Controller {
+class SearchController @Inject() (data: HBaseData) extends Controller {
 
   def getBusiness(period: String, id: String): Action[AnyContent] = {
     Action.async { implicit request =>
@@ -31,10 +34,9 @@ class SearchController @Inject() (data: DataAccess, val config: Config) extends 
         case _ => UnprocessableEntity(errAsJson(UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Please Ensure that UBRN is 12 characters long")).future
       }
     }
-
   }
 
-  def ResultsMatcher(businessModel: Business): Future[Result] = {
-    Ok(Json.toJson(businessModel)).future
+  def ResultsMatcher(businessModel: JsValue): Future[Result] = {
+    Ok(businessModel).future
   }
 }

@@ -15,10 +15,10 @@ lazy val Versions = new {
 }
 
 lazy val Constant = new {
-  val appName = "sbr-admin-data-api"
+  val appName = "bi-data"
   val detail = Versions.version
   val organisation = "ons"
-  val team = "sbr"
+  val team = "bi"
 }
 
 lazy val commonSettings = Seq (
@@ -76,11 +76,6 @@ lazy val api = (project in file("."))
     buildInfoOptions += BuildInfoOption.ToJson,
     buildInfoOptions += BuildInfoOption.BuildTime,
     buildInfoPackage := "controllers",
-    // Run with proper default env vars set for hbaseInMemory
-    javaOptions in Universal ++= Seq(
-      "-Dsource=hbaseInMemory",
-      "-Dsbr.hbase.inmemory=true"
-    ),
     libraryDependencies ++= Seq (
       filters,
       jdbc,
@@ -89,9 +84,6 @@ lazy val api = (project in file("."))
       "org.scalatestplus.play"       %%    "scalatestplus-play"  %    "2.0.0"           % Test,
       "io.swagger"                   %%    "swagger-play2"       %    "1.5.3",
       "org.webjars"                  %     "swagger-ui"          %    "2.2.10-1",
-      "org.apache.hive"              %     "hive-jdbc"           %    "1.2.1",
-      "org.apache.spark"             %     "spark-hive_2.11"     %    "2.1.0",
-      "mysql"                        %     "mysql-connector-java" %   "5.1.35"
     ),
     assemblyJarName in assembly := "sbr-admin-data-api.jar",
     assemblyMergeStrategy in assembly := {

@@ -1,22 +1,17 @@
 package utils
 
-import java.io.File
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Optional
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.Base64
+import java.nio.charset.StandardCharsets
 
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.Result
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ Await, Future }
-import scala.concurrent.duration._
-import scala.io.Source
 import scala.util.{ Failure, Success, Try }
-import java.util.Base64
-import java.nio.charset.StandardCharsets
 
 /**
  * Created by chiua on 05/11/2017.
@@ -31,22 +26,28 @@ object Utilities {
   def hbaseMapper(jsonMap: Option[Any]): Map[String, String] = {
     var businessVars = Map[String, String]()
     jsonMap match {
+      //strips out some
       case Some(e: Map[String, List[Map[String, Any]]]) => {
-        for ((key, value) <- e)
+        //loops over initial map
+        for ((key, value) <- e) {
+          //gets contents of first list of maps
           for (record <- value) {
+            //gets key(ubrn)
             businessVars += ("id" -> decodeHbase(record, "key"))
+            //gets second list of maps(columns)
             record.get("Cell") match {
               case Some(x: List[Map[String, Any]]) => {
+                //loops through columns in second list of maps
                 for (vars <- x)
                   businessVars += (decodeHbase(vars, "column") -> decodeHbase(vars, "$"))
               }
             }
           }
+        }
       }
     }
     businessVars
   }
-  def currentDirectory = new File(".").getCanonicalPath
 
   def errAsJson(status: Int, code: String, msg: String): JsObject = {
     Json.obj(
@@ -54,17 +55,6 @@ object Utilities {
       "code" -> code,
       "message_en" -> msg
     )
-  }
-
-  def getElement(value: Any) = {
-    val res = value match {
-      case Some(i: Int) => i
-      case Some(l: Long) => l
-      case Some(z) => s""""${z}""""
-      case x => s""""${x.toString}""""
-      case None => ""
-    }
-    res
   }
 
   /**
@@ -86,33 +76,6 @@ object Utilities {
       Future.successful(res)
     }
   }
-
-  def readFile(fileName: String): Iterator[String] = {
-    Logger.info(s"Reading in file: $fileName")
-    Try(Source.fromFile(fileName).getLines) match {
-      case Success(x) => x
-      case Failure(e) => throw new RuntimeException(s"Cannot read file $fileName", e)
-    }
-  }
-
-  def readCsv(fileName: String): List[Map[String, String]] = {
-    val counter = new AtomicInteger(0)
-    val content = readFile(fileName).map(_.split(","))
-    val header = content.next
-    val data = content.map { z =>
-      Future {
-        val c = counter.incrementAndGet()
-        if (c % 1000 == 0) Logger.debug(s"Processed 1000 lines of $fileName")
-        header.zip(
-          z.map(
-            a => a.replaceAll("^\"|\"$", "")
-          )
-        ).toMap
-      }
-    }.toList
-    Await.result(Future.sequence(data), 2 minutes)
-  }
-
   implicit class OptionalConversion[A](val o: Optional[A]) extends AnyVal {
     def toOption[B](implicit conv: A => B): Option[B] = if (o.isPresent) Some(o.get) else None
   }

@@ -25,7 +25,7 @@ brew install sbt
 
 With the minimal environment setup described above (just Java 8 and SBT), the sbr-admin-data-api will only work with the csv file or in-memory HBase. Further instructions for Hbase (not in memory), Hive and Impala setup/installations can be found [below](#source-setup).
 
-To run the `bi-data-api`, run the following:
+To run the `bi-data`, run the following:
 
 ``` shell
 sbt api/run -Dhttp.port=9011
