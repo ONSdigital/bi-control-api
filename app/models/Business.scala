@@ -2,7 +2,6 @@ package models
 import java.util.Base64
 import java.nio.charset.StandardCharsets
 import scala.util.parsing.json.JSON._
-import scala.collection.mutable.ListBuffer
 import play.api.libs.json.{ JsValue, Json, OFormat }
 import utils.Utilities._
 
@@ -22,24 +21,21 @@ case class Business(
 
 object Business {
   implicit val unitFormat: OFormat[Business] = Json.format[Business]
-
-  implicit def string2Option(s: String): Some[String] = Some(s)
-
   def toJson(business: String): Business = {
     val jsonMap = parseFull(business)
-    val bv: collection.mutable.Map[String, String] = hbaseMapper(jsonMap)
+    val businessVars: Map[String, String] = hbaseMapper(jsonMap)
     Business(
-      bv.get("id"),
-      bv.get("vars:businessName"),
-      bv.get("vars:industryCode"),
-      bv.get("vars:legalStatus"),
-      bv.get("vars:tradingStatus"),
-      bv.get("vars:turnover"),
-      bv.get("vars:employmentBands"),
-      bv.get("vars:postCode"),
-      bv.get("vars:vatRefs"),
-      bv.get("vars:payeRefs"),
-      bv.get("vars:companyNo")
+      businessVars.get("id"),
+      businessVars.get("vars:businessName"),
+      businessVars.get("vars:industryCode"),
+      businessVars.get("vars:legalStatus"),
+      businessVars.get("vars:tradingStatus"),
+      businessVars.get("vars:turnover"),
+      businessVars.get("vars:employmentBands"),
+      businessVars.get("vars:postCode"),
+      businessVars.get("vars:vatRefs"),
+      businessVars.get("vars:payeRefs"),
+      businessVars.get("vars:companyNo")
     )
   }
 }

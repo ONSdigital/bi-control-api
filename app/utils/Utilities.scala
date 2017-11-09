@@ -9,14 +9,12 @@ import java.util.concurrent.atomic.AtomicInteger
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.Result
-import uk.gov.ons.sbr.data.domain.StatisticalUnit
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
 import scala.io.Source
 import scala.util.{ Failure, Success, Try }
-import scala.collection.mutable.ListBuffer
 import java.util.Base64
 import java.nio.charset.StandardCharsets
 
@@ -30,8 +28,8 @@ object Utilities {
     new String(valueKey)
   }
 
-  def hbaseMapper(jsonMap: Option[Any]): collection.mutable.Map[String, String] = {
-    var businessVars = collection.mutable.Map[String, String]()
+  def hbaseMapper(jsonMap: Option[Any]): Map[String, String] = {
+    var businessVars = Map[String, String]()
     jsonMap match {
       case Some(e: Map[String, List[Map[String, Any]]]) => {
         for ((key, value) <- e)
@@ -39,14 +37,12 @@ object Utilities {
             businessVars += ("id" -> decodeHbase(record, "key"))
             record.get("Cell") match {
               case Some(x: List[Map[String, Any]]) => {
-                for (vars <- x) {
+                for (vars <- x)
                   businessVars += (decodeHbase(vars, "column") -> decodeHbase(vars, "$"))
-                }
               }
             }
           }
       }
-      case None => println("Error parsing JSon")
     }
     businessVars
   }
@@ -123,5 +119,9 @@ object Utilities {
 
   def periodToYearMonth(period: String): YearMonth = {
     YearMonth.parse(period.slice(0, 6), DateTimeFormatter.ofPattern("yyyyMM"))
+  }
+
+  def validateUbrn(id: String): Boolean = {
+    if (id.length equals 12) true else false
   }
 }
