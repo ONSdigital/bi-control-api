@@ -5,8 +5,6 @@ An API for use by sbr-api for accessing CompanyHouse/VAT/PAYE data
 
 ## API Endpoints
 
-If you do not specify a period, the record for the most recent period will be returned.
-
 If you want to specify a particular period, use the format below.
 
 | method | endpoint                                         | example                               |
@@ -32,16 +30,6 @@ To run the `bi-data-api`, run the following:
 ``` shell
 sbt api/run -Dhttp.port=9011
 ```
-                           |
-## Source Setup
-
-#### csv - No setup required
-
-#### hiveLocal - [Hive (Hortonworks Sandbox VM) Setup](HIVE.md)
-
-#### hbaseLocal - [HBase Setup](HBASE.md)
-
-#### hbaseInMemory - No setup required
 
 ## Assembly
 
