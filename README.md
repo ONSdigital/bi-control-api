@@ -1,4 +1,4 @@
-# sbr-admin-data-api
+# bi-data
 An API for use by sbr-api for accessing CompanyHouse/VAT/PAYE data
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)]() [![Dependency Status](https://www.versioneye.com/user/projects/596f195e6725bd0027f25e93/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/596f195e6725bd0027f25e93)
@@ -23,8 +23,6 @@ brew install sbt
 
 ## Running
 
-With the minimal environment setup described above (just Java 8 and SBT), the sbr-admin-data-api will only work with the csv file or in-memory HBase. Further instructions for Hbase (not in memory), Hive and Impala setup/installations can be found [below](#source-setup).
-
 To run the `bi-data`, run the following:
 
 ``` shell
@@ -47,9 +45,7 @@ After running the following command:
 sbt clean compile "project api" universal:packageBin
 ```
 
-A .zip file is created here, `/target/universal/sbr-admin-data-api.zip`, which is pushed to CloudFoundry. 
-
-The executable inside the .zip is configured to run with default environment variables passed in, as defined in the [build.sbt](https://github.com/ONSdigital/sbr-admin-data-api/blob/feature/hbase-in-memory/build.sbt#L85).
+A .zip file is created here, `/target/universal/bi-data.zip`, which is pushed to CloudFoundry.
 
 ## Testing
 

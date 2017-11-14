@@ -7,10 +7,13 @@ import play.api.mvc.{ Action, AnyContent, Result, Controller }
 import play.api.libs.json._
 
 import scala.concurrent.Future
-import scala.util.{ Failure, Success }
-import scala.util.Try
+import scala.concurrent.duration._
+import scala.util.{ Failure, Success, Try }
+
+import akka.actor.{ ActorSystem, Props }
 
 import utils.Utilities._
+import utils.DangerousActor
 import models._
 import services._
 
@@ -20,14 +23,24 @@ import services._
 
 class SearchController @Inject() (data: HBaseData) extends Controller {
 
+  val system = ActorSystem("bi-breaker")
+  val userActor = system.actorOf(Props[DangerousActor], name = "User")
+
   def getBusiness(period: String, id: String): Action[AnyContent] = {
     Action.async { implicit request =>
       id match {
         case id if validateUbrn(id) => Try(periodToYearMonth(period)) match {
           case Success(validPeriod) =>
             Try(Business.toJson(data.getOutput(period, id))) match {
-              case Success(results) => ResultsMatcher(results)
-              case Failure(_) => NotFound(errAsJson(404, "Not Found", s"Could not find UBRN ${id} in period ${validPeriod}")).future
+              case Success(results) => {
+                userActor ! "Success"
+                ResultsMatcher(results)
+              }
+              //case notfound (404)
+              case Failure(_) => {
+                userActor ! "Failure"
+                InternalServerError(errAsJson(INTERNAL_SERVER_ERROR, "Internal Server Error", s"An error has occurred, please contact the server administrator")).future
+              }
             }
           case Failure(_: DateTimeException) => UnprocessableEntity(errAsJson(UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Please ensure the period is in the following format: YYYYMM")).future
         }

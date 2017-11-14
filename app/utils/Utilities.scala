@@ -17,7 +17,6 @@ import scala.util.{ Failure, Success, Try }
  * Created by chiua on 05/11/2017.
  */
 object Utilities {
-
   def decodeHbase(hbaseData: Map[String, Any], column: String) = {
     val valueKey = Base64.getDecoder.decode(hbaseData.get(column).get.toString.getBytes(StandardCharsets.UTF_8))
     new String(valueKey)
@@ -26,20 +25,13 @@ object Utilities {
   def hbaseMapper(jsonMap: Option[Any]): Map[String, String] = {
     var businessVars = Map[String, String]()
     jsonMap match {
-      //strips out some
       case Some(e: Map[String, List[Map[String, Any]]]) => {
-        //loops over initial map
         for ((key, value) <- e) {
-          //gets contents of first list of maps
           for (record <- value) {
-            //gets key(ubrn)
             businessVars += ("id" -> decodeHbase(record, "key"))
-            //gets second list of maps(columns)
             record.get("Cell") match {
               case Some(x: List[Map[String, Any]]) => {
-                //loops through columns in second list of maps
-                for (vars <- x)
-                  businessVars += (decodeHbase(vars, "column") -> decodeHbase(vars, "$"))
+                x.map(vars => businessVars += (decodeHbase(vars, "column") -> decodeHbase(vars, "$")))
               }
             }
           }

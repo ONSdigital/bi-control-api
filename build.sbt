@@ -79,11 +79,12 @@ lazy val api = (project in file("."))
     libraryDependencies ++= Seq (
       filters,
       jdbc,
-      "org.webjars"                  %%    "webjars-play"        %    "2.5.0-3",
-      "com.typesafe.scala-logging"   %%    "scala-logging"       %    "3.5.0",
-      "org.scalatestplus.play"       %%    "scalatestplus-play"  %    "2.0.0"           % Test,
-      "io.swagger"                   %%    "swagger-play2"       %    "1.5.3",
-      "org.webjars"                  %     "swagger-ui"          %    "2.2.10-1",
+      "org.webjars"                  %%    "webjars-play"         %    "2.5.0-3",
+      "com.typesafe.scala-logging"   %%    "scala-logging"        %    "3.5.0",
+      "org.scalatestplus.play"       %%    "scalatestplus-play"   %    "2.0.0"           % Test,
+      "io.swagger"                   %%    "swagger-play2"        %    "1.5.3",
+      "org.webjars"                  %     "swagger-ui"           %    "2.2.10-1",
+      "mysql"                        %     "mysql-connector-java" %   "5.1.35"
     ),
     assemblyJarName in assembly := "sbr-admin-data-api.jar",
     assemblyMergeStrategy in assembly := {
