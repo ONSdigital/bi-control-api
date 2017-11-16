@@ -30,18 +30,19 @@ class SearchController @Inject() (data: HBaseData) extends Controller {
     Action.async { implicit request =>
       id match {
         case id if validateUbrn(id) => Try(periodToYearMonth(period)) match {
-          case Success(validPeriod) =>
-            Try(Business.toJson(data.getOutput(period, id))) match {
-              case Success(results) => {
-                userActor ! "Success"
-                ResultsMatcher(results)
-              }
-              //case notfound (404)
-              case Failure(_) => {
-                userActor ! "Failure"
-                InternalServerError(errAsJson(INTERNAL_SERVER_ERROR, "Internal Server Error", s"An error has occurred, please contact the server administrator")).future
+          case Success(validPeriod) => Try(data.getOutput(period, id)) match {
+            case Success(results) => {
+              userActor ! "Success"
+              Try(Business.toJson(results)) match {
+                case Success(results) => ResultsMatcher(results)
+                case Failure(_) => NotFound(errAsJson(404, "Not Found", s"Could not find value ${id}")).future
               }
             }
+            case _ => {
+              userActor ! "Failure"
+              InternalServerError(errAsJson(INTERNAL_SERVER_ERROR, "Internal Server Error", s"An error has occurred, please contact the server administrator")).future
+            }
+          }
           case Failure(_: DateTimeException) => UnprocessableEntity(errAsJson(UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Please ensure the period is in the following format: YYYYMM")).future
         }
         case _ => UnprocessableEntity(errAsJson(UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Please Ensure that UBRN is 12 characters long")).future
