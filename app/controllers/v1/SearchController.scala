@@ -13,7 +13,7 @@ import scala.util.{ Failure, Success, Try }
 import akka.actor.{ ActorSystem, Props }
 
 import utils.Utilities._
-import utils.DangerousActor
+import utils.CircuitBreakerActor
 import models._
 import services._
 
@@ -24,7 +24,7 @@ import services._
 class SearchController @Inject() (data: HBaseData) extends Controller {
 
   val system = ActorSystem("bi-breaker")
-  val userActor = system.actorOf(Props[DangerousActor], name = "User")
+  val userActor = system.actorOf(Props[CircuitBreakerActor], name = "User")
 
   def getBusiness(period: String, id: String): Action[AnyContent] = {
     Action.async { implicit request =>

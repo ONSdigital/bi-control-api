@@ -9,7 +9,7 @@ import akka.actor.{ Actor, ActorLogging }
 
 import com.typesafe.config.{ Config, ConfigFactory }
 
-class DangerousActor extends Actor with ActorLogging {
+class CircuitBreakerActor extends Actor with ActorLogging {
 
   import context.dispatcher
   private val config: Config = ConfigFactory.load()

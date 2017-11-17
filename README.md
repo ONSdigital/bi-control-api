@@ -1,5 +1,5 @@
 # bi-data
-An API for use by sbr-api for accessing CompanyHouse/VAT/PAYE data
+An API for getting business data from the HBase REST API
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)]() [![Dependency Status](https://www.versioneye.com/user/projects/596f195e6725bd0027f25e93/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/596f195e6725bd0027f25e93)
 
@@ -44,7 +44,7 @@ After running the following command:
 ```shell
 sbt clean compile "project api" universal:packageBin
 ```
-
+bi
 A .zip file is created here, `/target/universal/bi-data.zip`, which is pushed to CloudFoundry.
 
 ## Testing

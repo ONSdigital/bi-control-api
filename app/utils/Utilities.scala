@@ -26,16 +26,13 @@ object Utilities {
     var businessVars = Map[String, String]()
     jsonMap match {
       case Some(e: Map[String, List[Map[String, Any]]]) => {
-        for ((key, value) <- e) {
+        for ((key, value) <- e)
           for (record <- value) {
             businessVars += ("id" -> decodeHbase(record, "key"))
             record.get("Cell") match {
-              case Some(x: List[Map[String, Any]]) => {
-                x.map(vars => businessVars += (decodeHbase(vars, "column") -> decodeHbase(vars, "$")))
-              }
+              case Some(x: List[Map[String, Any]]) => x.map(vars => businessVars += (decodeHbase(vars, "column") -> decodeHbase(vars, "$")))
             }
           }
-        }
       }
     }
     businessVars

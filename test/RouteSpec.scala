@@ -17,7 +17,6 @@ class RouteSpec extends TestUtils {
   "HomeController" should {
     "render default app route" in {
       val home = fakeRequest("/")
-      // redirect
       status(home) mustEqual SEE_OTHER
       val res = getValue(redirectLocation(home))
       res must include("/health")
@@ -33,15 +32,14 @@ class RouteSpec extends TestUtils {
     }
   }
 
-  //  "SearchController" should {
-  //    "return missing parameter error" in {
-  //      val suggest = fakeRequest(s"/v1/period/201706")
-  //      status(suggest) mustBe NOT_FOUND
-  //      contentType(suggest) mustBe Some("application/json")
-  //      val err_code: String = getJsValue(contentAsJson(suggest) \ "code")
-  //      err_code mustBe s""""Unprocessable Entity""""
-  //    }
-  //  }
+  "SearchController" should {
+    "return 404 if parameters are missing" in {
+      val period = "12345678"
+      val res = fakeRequest(s"/v1/period/${period}")
+      status(res) mustBe NOT_FOUND
+      contentType(res) mustBe Some("text/html")
+    }
+  }
 
   "VersionController" should {
     "display list of versions" in {
