@@ -26,31 +26,17 @@ class SearchController @Inject() (data: HBaseData) extends Controller {
   val system = ActorSystem("bi-breaker")
   val userActor = system.actorOf(Props[CircuitBreakerActor], name = "User")
 
-  def getBusiness(period: String, id: String): Action[AnyContent] = {
-    Action.async { implicit request =>
-      id match {
-        case id if validateUbrn(id) => Try(periodToYearMonth(period)) match {
-          case Success(validPeriod) => Try(data.getOutput(period, id)) match {
-            case Success(results) => {
-              userActor ! "Success"
-              Try(Business.toJson(results)) match {
-                case Success(results) => ResultsMatcher(results)
-                case Failure(_) => NotFound(errAsJson(404, "Not Found", s"Could not find value ${id}")).future
-              }
-            }
-            case _ => {
-              userActor ! "Failure"
-              InternalServerError(errAsJson(INTERNAL_SERVER_ERROR, "Internal Server Error", s"An error has occurred, please contact the server administrator")).future
-            }
-          }
-          case Failure(_: DateTimeException) => UnprocessableEntity(errAsJson(UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Please ensure the period is in the following format: YYYYMM")).future
+  def getBusiness(period: String, id: String): Action[AnyContent] = Action.async { implicit request =>
+    val x: Either[String, Result] = validateParams(period, id)
+    x match {
+      case Right(error) => error.future
+      case Left(validPeriod) => Try(data.getOutput(validPeriod, id)) match {
+        case Success(results) => Try(Business.toJson(results)) match {
+          case Success(results) => Ok(results).future
+          case Failure(_) => NotFound(errAsJson(404, "Not Found", s"Could not find value ${id}")).future
         }
-        case _ => UnprocessableEntity(errAsJson(UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Please Ensure that UBRN is 12 characters long")).future
+        case _ => InternalServerError(errAsJson(INTERNAL_SERVER_ERROR, "Internal Server Error", s"An error has occurred, please contact the server administrator")).future
       }
     }
-  }
-
-  def ResultsMatcher(businessModel: JsValue): Future[Result] = {
-    Ok(businessModel).future
   }
 }
