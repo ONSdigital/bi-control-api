@@ -1,2 +1,13 @@
-*.class
-*.log
+logs
+target
+/.idea
+/.idea_modules
+/.project
+/.settings
+/.classpath
+/RUNNING_PID
+*.DS_Store
+project/project/
+.cache
+.history
+npm-debug.log
