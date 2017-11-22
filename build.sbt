@@ -79,6 +79,7 @@ lazy val api = (project in file("."))
     libraryDependencies ++= Seq (
       filters,
       jdbc,
+      cache,
       "org.webjars"                  %%    "webjars-play"         %    "2.5.0-3",
       "com.typesafe.scala-logging"   %%    "scala-logging"        %    "3.5.0",
       "org.scalatestplus.play"       %%    "scalatestplus-play"   %    "2.0.0"           % Test,
