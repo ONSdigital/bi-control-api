@@ -6,6 +6,7 @@ import java.util.Optional
 import java.util.Base64
 import java.nio.charset.StandardCharsets
 
+import play.api.mvc.Controller
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.Result
@@ -16,8 +17,8 @@ import scala.util.{ Failure, Success, Try }
 /**
  * Created by chiua on 05/11/2017.
  */
-object Utilities {
-
+object Utilities extends Controller {
+  
   def decodeHbase(hbaseData: Map[String, Any], column: String) = {
     val valueKey = Base64.getDecoder.decode(hbaseData.get(column).get.toString.getBytes(StandardCharsets.UTF_8))
     new String(valueKey)
@@ -26,24 +27,14 @@ object Utilities {
   def hbaseMapper(jsonMap: Option[Any]): Map[String, String] = {
     var businessVars = Map[String, String]()
     jsonMap match {
-      //strips out some
       case Some(e: Map[String, List[Map[String, Any]]]) => {
-        //loops over initial map
-        for ((key, value) <- e) {
-          //gets contents of first list of maps
+        for ((key, value) <- e)
           for (record <- value) {
-            //gets key(ubrn)
             businessVars += ("id" -> decodeHbase(record, "key"))
-            //gets second list of maps(columns)
             record.get("Cell") match {
-              case Some(x: List[Map[String, Any]]) => {
-                //loops through columns in second list of maps
-                for (vars <- x)
-                  businessVars += (decodeHbase(vars, "column") -> decodeHbase(vars, "$"))
-              }
+              case Some(x: List[Map[String, Any]]) => x.map(vars => businessVars += (decodeHbase(vars, "column") -> decodeHbase(vars, "$")))
             }
           }
-        }
       }
     }
     businessVars
@@ -76,15 +67,25 @@ object Utilities {
       Future.successful(res)
     }
   }
+
   implicit class OptionalConversion[A](val o: Optional[A]) extends AnyVal {
     def toOption[B](implicit conv: A => B): Option[B] = if (o.isPresent) Some(o.get) else None
   }
 
-  def periodToYearMonth(period: String): YearMonth = {
-    YearMonth.parse(period.slice(0, 6), DateTimeFormatter.ofPattern("yyyyMM"))
-  }
-
   def validateUbrn(id: String): Boolean = {
     if (id.length equals 12) true else false
+  }
+
+  def validPeriod(p: String): Boolean = {
+    Try(YearMonth.parse(p, DateTimeFormatter.ofPattern("yyyyMM"))) match {
+      case Success(_) => true
+      case Failure(_) => false
+    }
+  }
+
+  def validateParams(period: String, id: String): Either[String, Result] = (period, id) match {
+    case (_, i) if !validateUbrn(i) => Right(UnprocessableEntity(errAsJson(UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Please Ensure that UBRN is 12 characters long")))
+    case (p, _) if !validPeriod(p) => Right(UnprocessableEntity(errAsJson(UNPROCESSABLE_ENTITY, "Unprocessable Entity", "Please ensure the period is in the following format: YYYYMM")))
+    case _ => Left(period)
   }
 }

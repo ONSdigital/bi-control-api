@@ -3,7 +3,7 @@ package config
 import com.typesafe.config.Config
 import play.api.Logger
 
-object SbrConfigManager {
+object BiConfigManager {
   def envConf(conf: Config): Config = {
     // Get the environment variable 'source' that we pass in
     val src = sys.props.get("source").getOrElse("default")
