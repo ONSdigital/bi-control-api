@@ -13,6 +13,7 @@ import scala.util.{ Failure, Success, Try }
 
 import akka.actor.{ ActorSystem, Props }
 
+import com.typesafe.config.{ Config, ConfigFactory }
 import utils.Utilities._
 import utils.CircuitBreakerActor
 import models._
@@ -24,14 +25,15 @@ import services._
 
 class SearchController @Inject() (data: HBaseData, cache: CacheApi) extends Controller {
 
-  val system = ActorSystem("bi-breaker")
-  val userActor = system.actorOf(Props[CircuitBreakerActor], name = "User")
+  private val config: Config = ConfigFactory.load()
+  private val system = ActorSystem("bi-breaker")
+  private val userActor = system.actorOf(Props[CircuitBreakerActor], name = "User")
 
   def getBusiness(period: String, id: String): Action[AnyContent] = Action.async { implicit request =>
-    val x: Either[String, Result] = validateParams(period, id)
+    val validParams: Either[String, Result] = validateParams(period, id)
     cache.get[JsValue](id) match {
       case Some(x: JsValue) => Ok(x).future
-      case None => x match {
+      case None => validParams match {
         case Right(error) => error.future
         case Left(validPeriod) => Try(data.getOutput(validPeriod, id)) match {
           case Success(results) => Try(Business.toJson(results)) match {
@@ -45,7 +47,7 @@ class SearchController @Inject() (data: HBaseData, cache: CacheApi) extends Cont
   }
 
   def ResultsMatcher(businessModel: JsValue, id: String): Future[Result] = {
-    cache.set(id, businessModel, 5.minutes)
+    cache.set(id, businessModel, config.getInt("cache.reset.timeout").hours)
     Ok(businessModel).future
   }
 }
