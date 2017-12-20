@@ -52,8 +52,12 @@ class SearchController @Inject() (bl: Bulkloader, data: HBaseData, cache: CacheA
     }
   }
 
-  def ResultsMatcher(businessModel: JsValue, id: String, period: String): Future[Result] = {
+  def testLoad = Action {
     bl.loadHbase()
+    Ok("Hello world!")
+  }
+
+  def ResultsMatcher(businessModel: JsValue, id: String, period: String): Future[Result] = {
     userActor ! "Success"
     cache.set(s"${period}:${id}", businessModel, config.getInt("cache.reset.timeout").getOrElse(60) minutes)
     Ok(businessModel).future

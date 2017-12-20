@@ -1,10 +1,7 @@
 package utils
 
 import java.io.File
-import java.util._
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.SparkContext._
 import org.apache.hadoop.mapred.lib.MultipleTextOutputFormat
 
 import org.apache.hadoop.hbase.HBaseConfiguration
@@ -24,16 +21,28 @@ class Bulkloader() {
     val csvFile = new File(s"conf/sample/companyHouse.csv").toURI.toURL.toExternalForm
     val ss = SparkSession.builder().master("local").appName("appName").getOrCreate()
 
-    val conf = HBaseConfiguration.create()
-    val tableName = "august"
-    val table = new HTable(conf, tableName)
-
-    val companyNumber = "_c1"
-    val period = "ref_period"
-    val rowKey = s"$companyNumber~$period"
     val cf = "d"
     val savePath = "conf/sample/hfile/d"
     val loadPath = "conf/sample/hfile"
+
+    val df = ss.read
+      .option("header", true)
+      .csv(csvFile)
+    val columns = df.columns
+    val rd = df.rdd
+
+    val pairs = rd.map(line => {
+      for (x <- columns) {
+        println(s"line: ${line(1)}, cf: ${cf}, header: ${x}, value: ${line.getAs[String](x)}")
+      }
+    })
+
+    pairs.collect()
+    ss.stop()
+
+    //    val conf = HBaseConfiguration.create()
+    //    val tableName = "august"
+    //    val table = new HTable(conf, tableName)
 
     //    conf.set(TableOutputFormat.OUTPUT_TABLE, tableName)
     //    val job = Job.getInstance(conf)
@@ -41,22 +50,12 @@ class Bulkloader() {
     //    job.setMapOutputValueClass(classOf[KeyValue])
     //    HFileOutputFormat.configureIncrementalLoad(job, table)
 
-    val df = ss.read.csv(csvFile)
-    val rd = df.rdd
-    val headers = df.first()
-    //val pairs = rd.map(line => (line.getAs[String]("_c1"), Array[String](cf, cn, value).mkString)).sortByKey(true)
-    val pairs = rd.map(line => {
-      for (x <- headers) {
-        //println(s"line: ${line(1)}, cf: ${cf}, header: ${x}, value: ${line.getAs[String](x)}")
-      }
-    })
     //pairs.saveAsHadoopFile(savePath, classOf[String], classOf[String], classOf[MultipleTextOutputFormat[String, String]])
     //pairs.saveAsNewAPIHadoopFile(savePath, classOf[ImmutableBytesWritable], classOf[KeyValue], classOf[HFileOutputFormat])
 
-    // bulk load
-    //val bulkLoader = new LoadIncrementalHFiles(conf)
-    //bulkLoader.doBulkLoad(new Path(loadPath), table)
+    //bulk load
+    //    val bulkLoader = new LoadIncrementalHFiles(conf)
+    //    bulkLoader.doBulkLoad(new Path(loadPath), table)
     //pairs.collect()
-    ss.stop()
   }
 }
