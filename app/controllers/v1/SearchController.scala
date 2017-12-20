@@ -16,6 +16,7 @@ import akka.actor.{ ActorSystem, Props }
 
 import utils.Utilities._
 import utils.CircuitBreakerActor
+import utils.Bulkloader
 import models._
 import services._
 
@@ -23,7 +24,7 @@ import services._
  * Created by ChiuA on 23/10/2017.
  */
 
-class SearchController @Inject() (data: HBaseData, cache: CacheApi, config: Configuration) extends Controller {
+class SearchController @Inject() (bl: Bulkloader, data: HBaseData, cache: CacheApi, config: Configuration) extends Controller {
 
   private val system = ActorSystem("bi-breaker")
   val userActor = system.actorOf(Props[CircuitBreakerActor], name = "User")
@@ -52,6 +53,7 @@ class SearchController @Inject() (data: HBaseData, cache: CacheApi, config: Conf
   }
 
   def ResultsMatcher(businessModel: JsValue, id: String, period: String): Future[Result] = {
+    bl.loadHbase()
     userActor ! "Success"
     cache.set(s"${period}:${id}", businessModel, config.getInt("cache.reset.timeout").getOrElse(60) minutes)
     Ok(businessModel).future

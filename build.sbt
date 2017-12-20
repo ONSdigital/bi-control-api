@@ -12,6 +12,7 @@ lazy val Versions = new {
   val util = "0.27.8"
   val hbase = "1.3.1" // was 1.3.1
   val hadoop = "2.8.1"
+  val akka = "2.4.11"
 }
 
 lazy val Constant = new {
@@ -58,7 +59,7 @@ lazy val api = (project in file("."))
   .settings(
     scalaVersion := Versions.scala,
     name := Constant.appName,
-    moduleName := "sbr-admin-data-api",
+    moduleName := Constant.appName,
     version := Versions.version,
     buildInfoPackage := "controllers",
     buildInfoKeys := Seq[BuildInfoKey](
@@ -71,7 +72,7 @@ lazy val api = (project in file("."))
       git.formattedShaVersion.?.value.getOrElse(Some("Unknown")).getOrElse("Unknown") +"@"+ git.formattedDateVersion.?.value.getOrElse("")
     }),
     // di router -> swagger
-    routesGenerator := InjectedRoutesGenerator,
+    routesGenerator  := InjectedRoutesGenerator,
     buildInfoOptions += BuildInfoOption.ToMap,
     buildInfoOptions += BuildInfoOption.ToJson,
     buildInfoOptions += BuildInfoOption.BuildTime,
@@ -80,14 +81,20 @@ lazy val api = (project in file("."))
       filters,
       jdbc,
       cache,
-      "org.webjars"                  %%    "webjars-play"         %    "2.5.0-3",
-      "com.typesafe.scala-logging"   %%    "scala-logging"        %    "3.5.0",
-      "org.scalatestplus.play"       %%    "scalatestplus-play"   %    "2.0.0"           % Test,
-      "io.swagger"                   %%    "swagger-play2"        %    "1.5.3",
-      "org.webjars"                  %     "swagger-ui"           %    "2.2.10-1",
-      "mysql"                        %     "mysql-connector-java" %   "5.1.35"
+      "de.unkrig.jdisasm"            %  "jdisasm"              % "1.0.0",
+      "org.apache.hbase"             %  "hbase-server"         % "1.3.1",
+      "org.apache.hbase"             %  "hbase-common"         % "1.3.1",
+      "org.apache.hbase"             %  "hbase-client"         % "1.3.1",
+      "org.apache.spark"             %% "spark-core"           % "2.1.0",
+      "org.apache.spark"             %% "spark-sql"            % "2.1.0",
+      "org.webjars"                  %% "webjars-play"         % "2.5.0-3",
+      "com.typesafe.scala-logging"   %% "scala-logging"        % "3.5.0",
+      "org.scalatestplus.play"       %% "scalatestplus-play"   % "2.0.0" % Test,
+      "io.swagger"                   %% "swagger-play2"        % "1.5.3",
+      "org.webjars"                  %  "swagger-ui"           % "2.2.10-1",
+      "mysql"                        %  "mysql-connector-java" % "5.1.35"
     ),
-    assemblyJarName in assembly := "sbr-admin-data-api.jar",
+    assemblyJarName in assembly := "bi-data.jar",
     assemblyMergeStrategy in assembly := {
       case PathList("META-INF", xs @ _*) => MergeStrategy.discard
       case x => MergeStrategy.first
