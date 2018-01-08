@@ -10,9 +10,10 @@ lazy val Versions = new {
   val version = "0.1"
   val scapegoatVersion = "1.1.0"
   val util = "0.27.8"
-  val hbase = "1.3.1" // was 1.3.1
+  val hbase = "1.3.1"
   val hadoop = "2.8.1"
   val akka = "2.4.11"
+  val spark = "2.1.0"
 }
 
 lazy val Constant = new {
@@ -82,11 +83,11 @@ lazy val api = (project in file("."))
       jdbc,
       cache,
       "de.unkrig.jdisasm"            %  "jdisasm"              % "1.0.0",
-      "org.apache.hbase"             %  "hbase-server"         % "1.3.1",
-      "org.apache.hbase"             %  "hbase-common"         % "1.3.1",
-      "org.apache.hbase"             %  "hbase-client"         % "1.3.1",
-      "org.apache.spark"             %% "spark-core"           % "2.1.0",
-      "org.apache.spark"             %% "spark-sql"            % "2.1.0",
+      "org.apache.hbase"             %  "hbase-server"         % Versions.hbase,
+      "org.apache.hbase"             %  "hbase-common"         % Versions.hbase,
+      "org.apache.hbase"             %  "hbase-client"         % Versions.hbase,
+      "org.apache.spark"             %% "spark-core"           % Versions.spark,
+      "org.apache.spark"             %% "spark-sql"            % Versions.spark,
       "org.webjars"                  %% "webjars-play"         % "2.5.0-3",
       "com.typesafe.scala-logging"   %% "scala-logging"        % "3.5.0",
       "org.scalatestplus.play"       %% "scalatestplus-play"   % "2.0.0" % Test,
