@@ -2,24 +2,26 @@ package utils
 
 import java.io.File
 
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{ Row, SparkSession }
 import org.apache.hadoop.hbase.HBaseConfiguration
-import org.apache.hadoop.hbase.client.HTable
+import org.apache.hadoop.hbase.client.{ HTable, Put }
 import org.apache.hadoop.hbase.KeyValue
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
-import org.apache.hadoop.hbase.mapreduce.{HFileOutputFormat2, LoadIncrementalHFiles}
+import org.apache.hadoop.hbase.mapreduce.{ HFileOutputFormat2, LoadIncrementalHFiles }
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.hbase.mapred.TableOutputFormat
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.hbase.util.Bytes
+import org.apache.spark.sql
+import scala.collection.mutable.ListBuffer
 
-class Bulkloader() {
+class Bulkloader() extends java.io.Serializable {
 
   def loadHbase() {
 
     val csvFile = new File(s"conf/sample/companyHouse.csv").toURI.toURL.toExternalForm
     val ss = SparkSession.builder().master("local").appName("appName").getOrCreate()
 
-    val cf = "d"
     val savePath = "conf/sample/hfile/d"
     val loadPath = "conf/sample/hfile"
 
@@ -29,11 +31,7 @@ class Bulkloader() {
     val columns = df.columns
     val rd = df.rdd
 
-    val pairs = rd.map(line => {
-      for (x <- columns) {
-        println(s"line: ${line(1)}, cf: ${cf}, header: ${x}, value: ${line.getAs[String](x)}")
-      }
-    })
+    val pairs = rd.map(line => convertToKeyValuePairs(line, columns))
 
     val conf = HBaseConfiguration.create()
     val tableName = "august"
@@ -45,12 +43,24 @@ class Bulkloader() {
     job.setMapOutputValueClass(classOf[KeyValue])
     HFileOutputFormat2.configureIncrementalLoadMap(job, table)
 
-    pairs.saveAsNewAPIHadoopFile(savePath, classOf[ImmutableBytesWritable], classOf[KeyValue], classOf[HFileOutputFormat2])
+    pairs.saveAsTextFile(savePath)
+
+    //pairs.saveAsNewAPIHadoopFile(savePath, classOf[ImmutableBytesWritable], classOf[KeyValue], classOf[HFileOutputFormat2])
 
     val bulkLoader = new LoadIncrementalHFiles(conf)
     bulkLoader.doBulkLoad(new Path(loadPath), table)
-
-    pairs.collect()
     ss.stop()
+  }
+
+  def convertToKeyValuePairs(line: Row, columns: Array[String]): Put = {
+
+    val cfDataBytes = Bytes.toBytes("d")
+    val rowkey = Bytes.toBytes(line(1).toString)
+    val put = new Put(rowkey)
+    for (x <- columns) {
+      put.addColumn(cfDataBytes, Bytes.toBytes(x), Bytes.toBytes("x"))
+    }
+    put
+    //(new ImmutableBytesWritable(rowkey), put)
   }
 }
