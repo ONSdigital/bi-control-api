@@ -6,10 +6,12 @@ An API for getting business data from the HBase REST API
 ## API Endpoints
 
 If you want to specify a particular period, use the format below.
+/test - test create hFile and bulk load into hbase
 
 | method | endpoint                                         | example                               |
 |--------|--------------------------------------------------|---------------------------------------|
 | GET    | /v1/period/:period/id/:id                        | /v1/periods/201706/id/123412341234    |
+| Get    | /test                                            | localhost:{portNumber}/test           |
 
 
 ## Environment Setup
@@ -26,7 +28,8 @@ brew install sbt
 To run the `bi-data`, run the following:
 
 ``` shell
-sbt api/run -Dhttp.port=9011
+start-hbase.sh
+sbt api/run -Dhttp.port={portNumber}
 ```
 
 ## Assembly

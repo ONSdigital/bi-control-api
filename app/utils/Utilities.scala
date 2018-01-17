@@ -18,7 +18,7 @@ import scala.util.{ Failure, Success, Try }
  * Created by chiua on 05/11/2017.
  */
 object Utilities extends Controller {
-  
+
   def decodeHbase(hbaseData: Map[String, Any], column: String) = {
     val valueKey = Base64.getDecoder.decode(hbaseData.get(column).get.toString.getBytes(StandardCharsets.UTF_8))
     new String(valueKey)

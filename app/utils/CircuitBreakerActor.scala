@@ -28,10 +28,8 @@ class CircuitBreakerActor extends Actor with ActorLogging {
   def notifyMe(state: String): Unit =
     log.warning(s"Circuitbreaker is $state")
 
-  def dangerousCall: String = "This really isn't that dangerous of a call after all"
-
   def receive = {
     case "Success" => breaker.succeed()
-    case _ => sender() ! breaker.withSyncCircuitBreaker(dangerousCall)
+    case _ => breaker.fail()
   }
 }
