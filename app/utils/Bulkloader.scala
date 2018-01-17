@@ -3,64 +3,59 @@ package utils
 import java.io.File
 
 import org.apache.spark.sql.{ Row, SparkSession }
-import org.apache.hadoop.hbase.HBaseConfiguration
-import org.apache.hadoop.hbase.client.{ HTable, Put }
-import org.apache.hadoop.hbase.KeyValue
+import org.apache.hadoop.hbase.{ HBaseConfiguration, KeyValue }
+import org.apache.hadoop.hbase.client.HTable
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable
 import org.apache.hadoop.hbase.mapreduce.{ HFileOutputFormat2, LoadIncrementalHFiles }
 import org.apache.hadoop.mapreduce.Job
 import org.apache.hadoop.hbase.mapred.TableOutputFormat
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.hbase.util.Bytes
-import org.apache.spark.sql
-import scala.collection.mutable.ListBuffer
 
 class Bulkloader() extends java.io.Serializable {
 
   def loadHbase() {
 
-    val csvFile = new File(s"conf/sample/companyHouse.csv").toURI.toURL.toExternalForm
+    val csvFile = new File(s"conf/sample/sbr-2500-ent-ch-data.csv").toURI.toURL.toExternalForm
     val ss = SparkSession.builder().master("local").appName("appName").getOrCreate()
 
-    val savePath = "conf/sample/hfile/d"
-    val loadPath = "conf/sample/hfile"
+    val path = "conf/sample/hfile"
+    val hbasePath = "/usr/local/Cellar/hbase/1.2.6/libexec/conf"
+    val column = "companyname"
+    val period = "201706"
 
     val df = ss.read
       .option("header", true)
       .csv(csvFile)
-    val columns = df.columns
-    val rd = df.rdd
+      .sort("companynumber")
 
-    val pairs = rd.map(line => convertToKeyValuePairs(line, columns))
+    val pairs = df.rdd.map(line => convertToKeyValuePairs(line, column, period))
 
     val conf = HBaseConfiguration.create()
-    val tableName = "august"
+    val tableName = "june"
     val table = new HTable(conf, tableName)
 
     conf.set(TableOutputFormat.OUTPUT_TABLE, tableName)
+    conf.addResource(new File(s"$hbasePath/hbase-site.xml").toURI.toURL)
     val job = Job.getInstance(conf)
     job.setMapOutputKeyClass(classOf[ImmutableBytesWritable])
     job.setMapOutputValueClass(classOf[KeyValue])
     HFileOutputFormat2.configureIncrementalLoadMap(job, table)
 
-    pairs.saveAsTextFile(savePath)
-
-    //pairs.saveAsNewAPIHadoopFile(savePath, classOf[ImmutableBytesWritable], classOf[KeyValue], classOf[HFileOutputFormat2])
-
+    pairs.saveAsNewAPIHadoopFile(path, classOf[ImmutableBytesWritable], classOf[KeyValue], classOf[HFileOutputFormat2])
     val bulkLoader = new LoadIncrementalHFiles(conf)
-    bulkLoader.doBulkLoad(new Path(loadPath), table)
+    bulkLoader.doBulkLoad(new Path(path), table)
     ss.stop()
   }
 
-  def convertToKeyValuePairs(line: Row, columns: Array[String]): Put = {
-
-    val cfDataBytes = Bytes.toBytes("d")
-    val rowkey = Bytes.toBytes(line(1).toString)
-    val put = new Put(rowkey)
-    for (x <- columns) {
-      put.addColumn(cfDataBytes, Bytes.toBytes(x), Bytes.toBytes("x"))
-    }
-    put
-    //(new ImmutableBytesWritable(rowkey), put)
+  def convertToKeyValuePairs(line: Row, column: String, period: String): (ImmutableBytesWritable, KeyValue) = {
+    val rowkey = Bytes.toBytes(s"${line(1)}~$period")
+    val cell = new KeyValue(
+      rowkey,
+      Bytes.toBytes("d"),
+      Bytes.toBytes(column),
+      Bytes.toBytes(line.getAs[String](column))
+    )
+    (new ImmutableBytesWritable(rowkey), cell)
   }
 }

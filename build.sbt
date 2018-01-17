@@ -83,6 +83,7 @@ lazy val api = (project in file("."))
       jdbc,
       cache,
       "de.unkrig.jdisasm"            %  "jdisasm"              % "1.0.0",
+      "org.apache.hbase"             %  "hbase-hadoop-compat"   % "1.2.1",
       "org.apache.hbase"             %  "hbase-server"         % Versions.hbase,
       "org.apache.hbase"             %  "hbase-common"         % Versions.hbase,
       "org.apache.hbase"             %  "hbase-client"         % Versions.hbase,
