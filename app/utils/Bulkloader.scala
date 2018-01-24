@@ -15,11 +15,11 @@ class Bulkloader() extends java.io.Serializable {
 
   def loadHbase() {
 
-    val csvFile = new File(s"conf/sample/fulldata.csv").toURI.toURL.toExternalForm
+    val csvFile = new File(s"conf/sample/businessIndex.csv").toURI.toURL.toExternalForm
     val ss = SparkSession.builder().master("local").appName("appName").getOrCreate()
 
     val path = "conf/sample/hfile"
-    val id = " CompanyNumber"
+    val id = "companyname"
 
     val period = "201706"
     val tableName = "june"
@@ -43,7 +43,7 @@ class Bulkloader() extends java.io.Serializable {
     val conf = HBaseConfiguration.create()
     val table = new HTable(conf, tableName)
     conf.set(TableOutputFormat.OUTPUT_TABLE, tableName)
-    //conf.setInt("hbase.mapreduce.bulkload.max.hfiles.perRegion.perFamily", 500)
+    conf.setInt("hbase.mapreduce.bulkload.max.hfiles.perRegion.perFamily", 500)
     val job = Job.getInstance(conf)
     job.setMapOutputKeyClass(classOf[ImmutableBytesWritable])
     job.setMapOutputValueClass(classOf[KeyValue])

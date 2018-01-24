@@ -4,9 +4,6 @@
 
 GET     /                             controllers.HomeController.status
 
-# Searching Company/VAT/PAYE for the default period
-GET     /v1/period/:period/id/:id     controllers.v1.SearchController.getBusiness(period,id)
-
 GET     /test                         controllers.v1.SearchController.testLoad()
 
 # Searching Company/VAT/PAYE for a specific period
